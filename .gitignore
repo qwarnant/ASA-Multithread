@@ -1,0 +1,12 @@
+CMakeCache.txt
+CMakeLists.txt
+CMakeFiles
+cmake_install.cmake
+install_manifest.txt
+.idea
+bin
+obj
+.project
+.cproject
+vdiskA.bin
+vdiskB.bin
