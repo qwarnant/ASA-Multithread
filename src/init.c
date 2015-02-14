@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include "hw.h"
 #include "hardware.h"
 #include "init.h"
 
@@ -29,51 +31,79 @@ void init_multicore() {
 		exit(EXIT_FAILURE);
 	}
 
-	/* Interreupt handlers */
+    printf("Initialize the core...\n");
+
+    /* Interreupt handlers */
 	for (i = 0; i < 16; i++)
 		IRQVECTOR[i] = empty_it;
 
-	IRQVECTOR[0] = start_core;
-	IRQVECTOR[TIMER_IRQ] = start_timer_core;
-
-	_out(TIMER_ALARM, 0xFFFFFFFF - 20); /* alarm at next tick (at 0xFFFFFFFF) */
-	_out(TIMER_PARAM, 128 + 64); /* reset + alarm on */
-
-	printf("Initialize the core...\n");
+    /**
+    * Exercice 2 - 3
+    */
+	IRQVECTOR[0] = start_core_semaphore;
+    setup_irq(TIMER_IRQ, start_timer_core);
+    irq_enable();
 
 	for(i = 0; i < CORE_NCORE-1; i++) {
 		_out(CORE_IRQMAPPER + i, 0);
 	}
 
 	_out(CORE_IRQMAPPER + 1, 1 << TIMER_IRQ);
-
-
-
 	_out(CORE_STATUS, 0xF);
 
+}
+
+static void doIt() {
+    int pow = 2;
+    int i = 1;
+    for (i = 1; i < 100000; i++) {
+        pow *= 2;
+    }
 }
 
 void empty_it() {
 
 }
 
+
+/**
+* Exercice 1
+*/
 void start_core() {
-	printf("Start the core\n");
-	unsigned coreId = _in(CORE_ID);
-	int pow = 2;
+    unsigned coreId = (unsigned) _in(CORE_ID);
+
+    printf("Start the core #%d\n", coreId);
 
 	while (1) {
-		int i = 1;
-		for (i = 1; i < 65000; i++) {
-			pow *= 2;
-		}
+        doIt();
 		printf("End the job core #%d\n", coreId);
 	}
 
 }
 
+/**
+* Exercice 3
+*/
+void start_core_semaphore() {
+    while(1) {
+        unsigned core_id = (unsigned) _in(CORE_ID);
+        unsigned locked = (unsigned) _in(CORE_LOCK);
+        printf("Locked : %d\n", locked);
+        if(locked == 1) {
+            _out(CORE_UNLOCK, 1);
+            printf("lock pris par le core #%d\n", core_id);
+            doIt();
+            _out(CORE_UNLOCK, 0);
+        } else {
+            printf("lock pas dispo pour le core #%d\n", core_id);
+        }
+    }
+}
+
+/**
+* Exercice 2
+ */
 void start_timer_core() {
-	unsigned coreId = _in(CORE_ID);
+	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
-	_out(TIMER_ALARM, 0xFFFFFFFF - 20);
 }

@@ -25,7 +25,7 @@ _OBJ	= $(patsubst %.c, %.o, $(SOURCES))
 OBJ 	= $(patsubst $(SRCDIR)/%,$(ODIR)/%,$(_OBJ))
 BINARIES= $(addprefix $(BINDIR)/,$(BIN))
 OBJECTS = $(addprefix $(ODIR)/,\
-		irq.o init.o)
+		init.o hw.o)
 
 all :    $(BINARIES)
 

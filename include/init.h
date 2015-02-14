@@ -19,3 +19,4 @@ void init_multicore();
 void empty_it();
 void start_core();
 void start_timer_core();
+void start_core_semaphore();
