@@ -14,8 +14,6 @@ static void * initial_ebp;
 static void * initial_esp;
 
 int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg) {
-	struct ctx_s* temp;
-
 	ctx->ctx_stack = malloc(stack_size);
 
 	if (ctx->ctx_stack == NULL )
@@ -30,6 +28,8 @@ int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg) {
 	ctx->ctx_magic = CTX_MAGIC;
 	ctx->ctx_core_id = (last_core_id++) % CORE_NCORE;
 
+	printf("Current ctx put on core #%d\n", ctx->ctx_core_id);
+
 	return EXIT_SUCCESS;
 }
 
@@ -42,10 +42,10 @@ void switch_to_ctx(struct ctx_s * ctx) {
 
 	while (ctx->ctx_state == CTX_END || ctx->ctx_state == CTX_STOP) {
 		if (ctx_ring[core_id] == ctx) {
-			ctx_ring[core_id] = current_ctx;
+			ctx_ring[core_id] = current_ctx[core_id];
 		}
 
-		if (ctx == current_ctx) {
+		if (ctx == current_ctx[core_id]) {
 			fprintf(stderr,
 					"All context in the ring are blocked for the core %d.\n",
 					core_id);
@@ -59,10 +59,11 @@ void switch_to_ctx(struct ctx_s * ctx) {
 		}
 	}
 
-	if (current_ctx != NULL ) {
-
+	if (current_ctx[core_id] != NULL ) {
+		void * esp = current_ctx[core_id]->ctx_esp;
+		void * ebp = current_ctx[core_id]->ctx_ebp;
 		asm ("movl %%esp, %0" "\n\t" "movl %%ebp, %1"
-				: "=r"(current_ctx->ctx_esp), "=r"(current_ctx->ctx_ebp)
+				: "=r"(esp), "=r"(ebp)
 				:);
 
 	}
@@ -83,8 +84,10 @@ void switch_to_ctx(struct ctx_s * ctx) {
 void start_current_ctx() {
 	unsigned core_id = _in(CORE_ID);
 
+	printf("Start the current context on the core #%d\n", core_id);
+
 	current_ctx[core_id]->ctx_state = CTX_EXE;
-	current_ctx[core_id]->ctx_f(current_ctx->ctx_arg);
+	current_ctx[core_id]->ctx_f(current_ctx[core_id]->ctx_arg);
 	current_ctx[core_id]->ctx_state = CTX_END;
 
 	if (current_ctx[core_id]->ctx_next == current_ctx[core_id]) {
@@ -108,7 +111,7 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 		ctx_ring[core_id] = new_ctx;
 		new_ctx->ctx_next = new_ctx;
 	} else {
-		new_ctx[core_id]->ctx_next = ctx_ring[core_id]->ctx_next;
+		new_ctx->ctx_next = ctx_ring[core_id]->ctx_next;
 		ctx_ring[core_id]->ctx_next = new_ctx;
 
 	}

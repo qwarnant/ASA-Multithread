@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 #include "irq.h"
+#include "init.h"
+#include "hardware.h"
 
 /*	The magic value to verify the consistance of the context structure  */
 #define CTX_MAGIC 0xCAFEBABE
@@ -11,9 +13,9 @@
 typedef void funct_t(void *);
 
 /* Define the current context structure */
-extern struct ctx_s * current_ctx;
+extern struct ctx_s * current_ctx[CORE_NCORE];
 /* Define the context ring for the scheduler */
-extern struct ctx_s * ctx_ring;
+extern struct ctx_s * ctx_ring[CORE_NCORE];
 
 /* The available states of a context */
 enum ctx_state_e {

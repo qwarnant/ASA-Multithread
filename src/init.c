@@ -23,8 +23,6 @@ void init_multicore() {
 	else
 		strcpy(HW_CONFIG, c);
 
-	printf("%s\n", HW_CONFIG);
-
 	if (init_hardware(HW_CONFIG) == 0) {
 		fprintf(stderr, "Error in hardware initialization\n");
 		exit(EXIT_FAILURE);
@@ -39,10 +37,10 @@ void init_multicore() {
     /**
     * Exercice 2 - 3
     */
-	IRQVECTOR[0] = start_core_semaphore;
+	IRQVECTOR[0] = start_core;
     IRQVECTOR[TIMER_IRQ] = start_timer_core;
     _out(TIMER_PARAM,128+64); /* reset + alarm on */
-    _out(TIMER_ALARM, 0xffffffff - 2000);
+    _out(TIMER_ALARM, 0xffffffff - 200);
 
 	for(i = 0; i < CORE_NCORE-1; i++) {
 		_out(CORE_IRQMAPPER + i, 0);
@@ -109,5 +107,5 @@ void start_core_semaphore() {
 void start_timer_core() {
 	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
-	 _out(TIMER_ALARM, 0xffffffff - 2000);
+	 _out(TIMER_ALARM, 0xffffffff - 200);
 }

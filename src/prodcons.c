@@ -11,17 +11,7 @@ int consumer_sleep_time = 0;
 /* Define the default sleep time of the producer process */
 int producer_sleep_time = 0;
 
-void main(int argc, char* argv[]) {
-
-	/* Get the user input */
-	if(argc == 2) {
-		fprintf(stderr, "Usage : %s [consumer_sleep_time] [producer_sleep_time]\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-	if(argc == 3) {
-		consumer_sleep_time = atoi(argv[1]);
-		producer_sleep_time = atoi(argv[2]);
-	}
+int main(int argc, char* argv[]) {
 
 	create_ctx(STACK_SIZE, producer, NULL);
 	create_ctx(STACK_SIZE, consumer, NULL);
@@ -32,16 +22,14 @@ void main(int argc, char* argv[]) {
 	sem_init(&empty, BUFFER_SIZE);
 	sem_init(&full, 0);
 
-	/* Set up the IRQ system */
-	setup_irq(TIMER_IRQ, yield);
-	start_hw();
+	init_multicore();
 
 	/* Start the context scheduler */
 	printf("Start the scheduler ...\n");
 	yield();
 	printf("\nEND OF MAIN !");
 
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 void producer(void *args) {

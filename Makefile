@@ -6,7 +6,7 @@ LDFLAGS = -m32
 LIBS	= -lhardware -lm -lpthread
 RM      = rm -f
 
-BIN	= core
+BIN	= core prodcons
 
 SRCDIR	= src
 COREDIR = core
