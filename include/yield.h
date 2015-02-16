@@ -2,7 +2,7 @@
 #define _Y_H_
 
 #include <stddef.h>
-#include "hw.h"
+#include "irq.h"
 
 /*	The magic value to verify the consistance of the context structure  */
 #define CTX_MAGIC 0xCAFEBABE

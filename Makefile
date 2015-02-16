@@ -25,7 +25,7 @@ _OBJ	= $(patsubst %.c, %.o, $(SOURCES))
 OBJ 	= $(patsubst $(SRCDIR)/%,$(ODIR)/%,$(_OBJ))
 BINARIES= $(addprefix $(BINDIR)/,$(BIN))
 OBJECTS = $(addprefix $(ODIR)/,\
-		init.o irq.o)
+		init.o irq.o sem.o yield.o)
 
 all :    $(BINARIES)
 
@@ -34,6 +34,7 @@ all :    $(BINARIES)
 ### Binaries
 ###-----------------------------------------------------------
 $(BINDIR)/core	: $(ODIR)/core.o $(OBJECTS)
+$(BINDIR)/prodcons : $(ODIR)/prodcons.o $(OBJECTS)
 
 $(BINDIR)/% : $(ODIR)/%.o
 	$(CC) -o $@ $^ -L$(LIBDIR) $(LDFLAGS) $(LIBS)

@@ -1,17 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 #include "yield.h"
 #include "init.h"
 
-struct ctx_s * current_ctx = NULL;
-struct ctx_s * ctx_ring = NULL;
+struct ctx_s * current_ctx[CORE_NCORE];
+struct ctx_s * ctx_ring[CORE_NCORE];
+
+static unsigned last_core_id = 0;
 
 static void * initial_ebp;
 static void * initial_esp;
 
 int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg) {
-	unsigned cores[CORE_NCORE];
 	struct ctx_s* temp;
 
 	ctx->ctx_stack = malloc(stack_size);
@@ -26,18 +28,7 @@ int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg) {
 	ctx->ctx_arg = arg;
 	ctx->ctx_state = CTX_INIT;
 	ctx->ctx_magic = CTX_MAGIC;
-
-	/**
-	 * Explore the ctx list to get a free core
-	 */
-	temp = *ctx;
-	while (temp != *ctx) {
-		cores[temp->ctx_core_id] = 1;
-	}
-
-	for(int i = 0; i < CORE_NCORE; i++) {
-//TODO
-	}
+	ctx->ctx_core_id = (last_core_id++) % CORE_NCORE;
 
 	return EXIT_SUCCESS;
 }
@@ -49,10 +40,9 @@ void switch_to_ctx(struct ctx_s * ctx) {
 
 	unsigned core_id = _in(CORE_ID);
 
-	while (ctx->ctx_core_id == core_id
-			&& (ctx->ctx_state == CTX_END || ctx->ctx_state == CTX_STOP)) {
-		if (ctx_ring == ctx) {
-			ctx_ring = current_ctx;
+	while (ctx->ctx_state == CTX_END || ctx->ctx_state == CTX_STOP) {
+		if (ctx_ring[core_id] == ctx) {
+			ctx_ring[core_id] = current_ctx;
 		}
 
 		if (ctx == current_ctx) {
@@ -76,13 +66,13 @@ void switch_to_ctx(struct ctx_s * ctx) {
 				:);
 
 	}
-	current_ctx = ctx;
+	current_ctx[core_id] = ctx;
 
 	asm ("movl %0, %%esp" "\n\t" "movl %1, %%ebp"
 			:
-			: "r"(current_ctx->ctx_esp), "r"(current_ctx->ctx_ebp));
+			: "r"(current_ctx[core_id]->ctx_esp), "r"(current_ctx[core_id]->ctx_ebp));
 
-	if (current_ctx->ctx_state == CTX_INIT) {
+	if (current_ctx[core_id]->ctx_state == CTX_INIT) {
 		start_current_ctx();
 	}
 	irq_enable();
@@ -91,11 +81,13 @@ void switch_to_ctx(struct ctx_s * ctx) {
 }
 
 void start_current_ctx() {
-	current_ctx->ctx_state = CTX_EXE;
-	current_ctx->ctx_f(current_ctx->ctx_arg);
-	current_ctx->ctx_state = CTX_END;
+	unsigned core_id = _in(CORE_ID);
 
-	if (current_ctx->ctx_next == current_ctx) {
+	current_ctx[core_id]->ctx_state = CTX_EXE;
+	current_ctx[core_id]->ctx_f(current_ctx->ctx_arg);
+	current_ctx[core_id]->ctx_state = CTX_END;
+
+	if (current_ctx[core_id]->ctx_next == current_ctx[core_id]) {
 		asm ("movl %0, %%esp" "\n\t" "movl %1, %%ebp"
 				:
 				: "r"(initial_esp), "r"(initial_ebp));
@@ -105,17 +97,19 @@ void start_current_ctx() {
 
 int create_ctx(int stack_size, funct_t f, void* args) {
 	struct ctx_s * new_ctx;
+	unsigned core_id = _in(CORE_ID);
+
 	new_ctx = malloc(sizeof(struct ctx_s));
 	if (new_ctx == 0) {
 		return -1;
 	}
 
-	if (ctx_ring == NULL ) {
-		ctx_ring = new_ctx;
+	if (ctx_ring[core_id] == NULL ) {
+		ctx_ring[core_id] = new_ctx;
 		new_ctx->ctx_next = new_ctx;
 	} else {
-		new_ctx->ctx_next = ctx_ring->ctx_next;
-		ctx_ring->ctx_next = new_ctx;
+		new_ctx[core_id]->ctx_next = ctx_ring[core_id]->ctx_next;
+		ctx_ring[core_id]->ctx_next = new_ctx;
 
 	}
 	init_ctx(new_ctx, (size_t) stack_size, f, args);
@@ -124,14 +118,15 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 }
 
 void yield() {
+	unsigned core_id = _in(CORE_ID);
 
-	if (current_ctx != NULL ) {
-		switch_to_ctx(current_ctx->ctx_next);
+	if (current_ctx[core_id] != NULL ) {
+		switch_to_ctx(current_ctx[core_id]->ctx_next);
 	} else {
 		asm ("movl %%esp, %0" "\n\t" "movl %%ebp, %1"
 				: "=r"(initial_esp), "=r"(initial_ebp)
 				:);
-		switch_to_ctx(ctx_ring);
+		switch_to_ctx(ctx_ring[core_id]);
 	}
 
 }
