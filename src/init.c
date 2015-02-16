@@ -9,15 +9,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "hw.h"
 #include "hardware.h"
 #include "init.h"
+#include "irq.h"
 
 void init_multicore() {
 	unsigned int i;
 	char *c, HW_CONFIG[100];
 
-	printf("val : %s\n", HW_CONFIG);
 
 	if ((c = getenv("HW_CONFIG")) == NULL )
 		strcpy(HW_CONFIG, "core.ini");
@@ -41,22 +40,24 @@ void init_multicore() {
     * Exercice 2 - 3
     */
 	IRQVECTOR[0] = start_core_semaphore;
-    setup_irq(TIMER_IRQ, start_timer_core);
-    irq_enable();
+    IRQVECTOR[TIMER_IRQ] = start_timer_core;
+    _out(TIMER_PARAM,128+64); /* reset + alarm on */
+    _out(TIMER_ALARM, 0xffffffff - 2000);
 
 	for(i = 0; i < CORE_NCORE-1; i++) {
 		_out(CORE_IRQMAPPER + i, 0);
 	}
+	_out(CORE_UNLOCK, 0);
 
-	_out(CORE_IRQMAPPER + 1, 1 << TIMER_IRQ);
 	_out(CORE_STATUS, 0xF);
+	_out(CORE_IRQMAPPER + 1, 1 << TIMER_IRQ);
 
 }
 
 static void doIt() {
     int pow = 2;
     int i = 1;
-    for (i = 1; i < 100000; i++) {
+    for (i = 1; i < 1000000000; i++) {
         pow *= 2;
     }
 }
@@ -85,11 +86,13 @@ void start_core() {
 * Exercice 3
 */
 void start_core_semaphore() {
-    while(1) {
-        unsigned core_id = (unsigned) _in(CORE_ID);
+    irq_enable();
+    unsigned core_id = (unsigned) _in(CORE_ID);
+	while(1) {
+
         unsigned locked = (unsigned) _in(CORE_LOCK);
         printf("Locked : %d\n", locked);
-        if(locked == 1) {
+        if(locked == 0) {
             _out(CORE_UNLOCK, 1);
             printf("lock pris par le core #%d\n", core_id);
             doIt();
@@ -106,4 +109,5 @@ void start_core_semaphore() {
 void start_timer_core() {
 	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
+	 _out(TIMER_ALARM, 0xffffffff - 2000);
 }
