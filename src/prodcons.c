@@ -13,6 +13,8 @@ int producer_sleep_time = 0;
 
 int main(int argc, char* argv[]) {
 
+	init_multicore();
+
 	create_ctx(STACK_SIZE, producer, NULL);
 	create_ctx(STACK_SIZE, consumer, NULL);
 
@@ -22,7 +24,7 @@ int main(int argc, char* argv[]) {
 	sem_init(&empty, BUFFER_SIZE);
 	sem_init(&full, 0);
 
-	init_multicore();
+
 
 	/* Start the context scheduler */
 	printf("Start the scheduler ...\n");

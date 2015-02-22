@@ -13,6 +13,7 @@
 #include "init.h"
 #include "irq.h"
 
+
 void init_multicore() {
 	unsigned int i;
 	char *c, HW_CONFIG[100];
@@ -48,14 +49,14 @@ void init_multicore() {
 	_out(CORE_UNLOCK, 0);
 
 	_out(CORE_STATUS, 0xF);
-	_out(CORE_IRQMAPPER + 1, 1 << TIMER_IRQ);
+	_out(CORE_IRQMAPPER + 2, 1 << TIMER_IRQ);
 
 }
 
 static void doIt() {
     int pow = 2;
     int i = 1;
-    for (i = 1; i < 1000000000; i++) {
+    for (i = 1; i < 10000000; i++) {
         pow *= 2;
     }
 }

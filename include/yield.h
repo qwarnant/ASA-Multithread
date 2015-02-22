@@ -60,7 +60,7 @@ void yield();
  This method initializes a new context with a specified execution stack
  size, a function and some args.
  */
-int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg);
+int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg, unsigned int);
 
 /*
  switch_to_ctx()
