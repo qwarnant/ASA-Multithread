@@ -11,24 +11,47 @@ int consumer_sleep_time = 0;
 /* Define the default sleep time of the producer process */
 int producer_sleep_time = 0;
 
+
+static void doit(){
+	 int pow = 2;
+	    int i = 1;
+	    for (i = 1; i < 1 << 20 ; i++) {
+	        pow *= 2;
+	    }
+}
+static void ping() {
+	while (1) {
+		doit();
+		printf("ping\n");
+	}
+}
+
+static void pong() {
+	while (1) {
+		doit();
+		printf("pong\n");
+
+	}
+}
+
 int main(int argc, char* argv[]) {
-
+	init_tab();
 	init_multicore();
-
-	create_ctx(STACK_SIZE, producer, NULL);
-	create_ctx(STACK_SIZE, consumer, NULL);
-
+	irq_enable();
+	create_ctx(STACK_SIZE, ping, NULL );
+	create_ctx(STACK_SIZE, pong, NULL );
+	irq_enable();
 	/* Buffer access control */
 	sem_init(&mutex, 1);
 	/* At the beginning, the buffer is empty */
 	sem_init(&empty, BUFFER_SIZE);
 	sem_init(&full, 0);
-
-
-
+	irq_enable();
 	/* Start the context scheduler */
 	printf("Start the scheduler ...\n");
+
 	yield();
+	irq_enable();
 	printf("\nEND OF MAIN !");
 
 	return EXIT_SUCCESS;

@@ -13,11 +13,19 @@ static unsigned last_core_id = 0;
 static void * initial_ebp;
 static void * initial_esp;
 
+void init_tab() {
+	int i;
+	for(i = 0; i < CORE_NCORE; i++) {
+		current_ctx[i] = NULL;
+		ctx_ring[i] = NULL;
+	}
+}
+
 int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg,
 		unsigned int core_id) {
 	ctx->ctx_stack = malloc(stack_size);
 
-	if (ctx->ctx_stack == NULL)
+	if (ctx->ctx_stack == NULL )
 		return -1;
 
 	ctx->ctx_ebp = ctx->ctx_esp = ((char*) ctx->ctx_stack)
@@ -34,25 +42,24 @@ int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg,
 	return EXIT_SUCCESS;
 }
 
-void switch_to_ctx(struct ctx_s * ctx) {
+void switch_to_ctx(struct ctx_s * ctx, unsigned core_id) {
 
 	assert(ctx->ctx_magic == CTX_MAGIC);
-	irq_disable();
-
-	unsigned core_id = _in(CORE_ID);
+	_out(TIMER_ALARM, 0xffffffff - 20);
 
 	while (ctx->ctx_state == CTX_END || ctx->ctx_state == CTX_STOP) {
+
 		if (ctx_ring[core_id] == ctx) {
 			ctx_ring[core_id] = current_ctx[core_id];
 		}
 
-		/*
-		 if (ctx == current_ctx[core_id]) {
-		 fprintf(stderr,
-		 "All context in the ring are blocked for the core %d.\n",
-		 core_id);
-		 }
-		 */
+		if (ctx == current_ctx[core_id]) {
+			/*fprintf(stderr,
+			 "All context in the ring are blocked for the core %d.\n",
+			 core_id);
+			 */
+		}
+
 		ctx = ctx->ctx_next;
 
 		if (ctx->ctx_state == CTX_END) {
@@ -62,7 +69,7 @@ void switch_to_ctx(struct ctx_s * ctx) {
 
 	}
 
-	if (current_ctx[core_id] != NULL) {
+	if (current_ctx[core_id] != NULL ) {
 		void * esp = current_ctx[core_id]->ctx_esp;
 		void * ebp = current_ctx[core_id]->ctx_ebp;
 		asm ("movl %%esp, %0" "\n\t" "movl %%ebp, %1"
@@ -76,18 +83,24 @@ void switch_to_ctx(struct ctx_s * ctx) {
 			:
 			: "r"(current_ctx[core_id]->ctx_esp), "r"(current_ctx[core_id]->ctx_ebp));
 
+	core_id = (unsigned) _in(CORE_ID);
+
 	if (current_ctx[core_id]->ctx_state == CTX_INIT) {
 		start_current_ctx();
 	}
+
 	irq_enable();
+
 	return;
 
 }
 
 void start_current_ctx() {
-	unsigned core_id = _in(CORE_ID);
+	unsigned core_id = (unsigned) _in(CORE_ID);
+	printf("start : %d\n", core_id);
 
 	printf("Start the current context on the core #%d\n", core_id);
+	irq_disable();
 
 	current_ctx[core_id]->ctx_state = CTX_EXE;
 	current_ctx[core_id]->ctx_f(current_ctx[core_id]->ctx_arg);
@@ -103,38 +116,46 @@ void start_current_ctx() {
 
 int create_ctx(int stack_size, funct_t f, void* args) {
 	struct ctx_s * new_ctx;
-	unsigned core_id = (last_core_id) % CORE_NCORE;
+	int core_id = (last_core_id) % CORE_NCORE;
 	last_core_id++;
+	printf("coreid %d\n",core_id);
+
 	new_ctx = malloc(sizeof(struct ctx_s));
 	if (new_ctx == 0) {
 		return -1;
 	}
 
-	if (ctx_ring[core_id] == NULL) {
+	if (ctx_ring[core_id] == NULL ) {
 		ctx_ring[core_id] = new_ctx;
 		new_ctx->ctx_next = new_ctx;
 	} else {
 		new_ctx->ctx_next = ctx_ring[core_id]->ctx_next;
 		ctx_ring[core_id]->ctx_next = new_ctx;
-
 	}
+
+
 	init_ctx(new_ctx, (size_t) stack_size, f, args, core_id);
+	printf("coreid : %d   core add : %p\n",new_ctx->ctx_core_id,ctx_ring[core_id]);
 
 	return 0;
 }
 
 void yield() {
-	unsigned core_id = _in(CORE_ID);
+	unsigned core_id = (unsigned) _in(CORE_ID);
+	_out(TIMER_ALARM, 0xffffffff - 20);
 
-	printf("core yield : %d\n", core_id);
+	if (ctx_ring[core_id] == NULL ) {
+		return;
+	}
 
-	if (current_ctx[core_id] != NULL) {
-		switch_to_ctx(current_ctx[core_id]->ctx_next);
+	if (current_ctx[core_id] != NULL ) {
+		switch_to_ctx(current_ctx[core_id]->ctx_next, core_id);
 	} else {
 		asm ("movl %%esp, %0" "\n\t" "movl %%ebp, %1"
 				: "=r"(initial_esp), "=r"(initial_ebp)
 				:);
-		switch_to_ctx(ctx_ring[core_id]);
+		core_id = (unsigned) _in(CORE_ID);
+		switch_to_ctx(ctx_ring[core_id], core_id);
 	}
 
 }

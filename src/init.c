@@ -12,6 +12,7 @@
 #include "hardware.h"
 #include "init.h"
 #include "irq.h"
+#include "yield.h"
 
 
 void init_multicore() {
@@ -39,9 +40,9 @@ void init_multicore() {
     * Exercice 2 - 3
     */
 	IRQVECTOR[0] = start_core;
-    IRQVECTOR[TIMER_IRQ] = start_timer_core;
+    IRQVECTOR[TIMER_IRQ] = yield;
     _out(TIMER_PARAM,128+64); /* reset + alarm on */
-    _out(TIMER_ALARM, 0xffffffff - 200);
+    _out(TIMER_ALARM, 0xffffffff - 20);
 
 	for(i = 0; i < CORE_NCORE-1; i++) {
 		_out(CORE_IRQMAPPER + i, 0);
@@ -49,7 +50,8 @@ void init_multicore() {
 	_out(CORE_UNLOCK, 0);
 
 	_out(CORE_STATUS, 0xF);
-	_out(CORE_IRQMAPPER + 2, 1 << TIMER_IRQ);
+	_out(CORE_IRQMAPPER , 1 << TIMER_IRQ);
+	_out(CORE_IRQMAPPER +1, 1 << TIMER_IRQ);
 
 }
 
@@ -108,5 +110,5 @@ void start_core_semaphore() {
 void start_timer_core() {
 	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
-	 _out(TIMER_ALARM, 0xffffffff - 200);
+	 _out(TIMER_ALARM, 0xffffffff - 20);
 }

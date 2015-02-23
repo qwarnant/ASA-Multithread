@@ -67,12 +67,14 @@ int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg, unsig
  This method allows the developer to switch to an another
  context in the context ring.
  */
-void switch_to_ctx(struct ctx_s * ctx);
+void switch_to_ctx(struct ctx_s * ctx,unsigned);
 
 /*
  start_current_ctx()
  This method starts the execution of the current context
  */
 void start_current_ctx();
+
+void init_tab();
 
 #endif
