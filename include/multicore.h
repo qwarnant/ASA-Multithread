@@ -16,7 +16,9 @@
 
 
 void init_multicore();
-void empty_it();
 void start_core();
-void start_timer_core();
-void start_core_semaphore();
+int swap_ctx(unsigned core_src, unsigned core_dest);
+int balance_ctx();
+void manage_core();
+void empty_it();
+void doIt();

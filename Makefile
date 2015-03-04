@@ -6,7 +6,7 @@ LDFLAGS = -m32
 LIBS	= -lhardware -lm -lpthread
 RM      = rm -f
 
-BIN	= core prodcons
+BIN	= prodcons shell
 
 SRCDIR	= src
 COREDIR = core
@@ -25,7 +25,7 @@ _OBJ	= $(patsubst %.c, %.o, $(SOURCES))
 OBJ 	= $(patsubst $(SRCDIR)/%,$(ODIR)/%,$(_OBJ))
 BINARIES= $(addprefix $(BINDIR)/,$(BIN))
 OBJECTS = $(addprefix $(ODIR)/,\
-		init.o irq.o sem.o yield.o)
+		multicore.o irq.o sem.o yield.o tools.o)
 
 all :    $(BINARIES)
 
@@ -33,7 +33,7 @@ all :    $(BINARIES)
 ###------------------------------
 ### Binaries
 ###-----------------------------------------------------------
-$(BINDIR)/core	: $(ODIR)/core.o $(OBJECTS)
+$(BINDIR)/shell	: $(ODIR)/shell.o $(OBJECTS)
 $(BINDIR)/prodcons : $(ODIR)/prodcons.o $(OBJECTS)
 
 $(BINDIR)/% : $(ODIR)/%.o

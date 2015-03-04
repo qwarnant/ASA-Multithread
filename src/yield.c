@@ -3,17 +3,19 @@
 #include <assert.h>
 #include <time.h>
 #include "yield.h"
-#include "init.h"
+#include "multicore.h"
 
 struct ctx_s * current_ctx[CORE_NCORE];
 struct ctx_s * ctx_ring[CORE_NCORE];
+unsigned ctx_load[CORE_NCORE];
 
 static unsigned last_core_id = 0;
+static unsigned last_pid = 0;
 
 static void * initial_ebp;
 static void * initial_esp;
 
-void init_tab() {
+void init_ctx_tab() {
 	int i;
 	for(i = 0; i < CORE_NCORE; i++) {
 		current_ctx[i] = NULL;
@@ -36,6 +38,8 @@ int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg,
 	ctx->ctx_state = CTX_INIT;
 	ctx->ctx_magic = CTX_MAGIC;
 	ctx->ctx_core_id = core_id;
+
+    ctx->ctx_id = last_pid++;
 
 	printf("Current ctx put on core #%d\n", ctx->ctx_core_id);
 

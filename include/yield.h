@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include "irq.h"
-#include "init.h"
+#include "multicore.h"
 #include "hardware.h"
 
 /*	The magic value to verify the consistance of the context structure  */
@@ -16,6 +16,8 @@ typedef void funct_t(void *);
 extern struct ctx_s * current_ctx[CORE_NCORE];
 /* Define the context ring for the scheduler */
 extern struct ctx_s * ctx_ring[CORE_NCORE];
+/* Define the context load on the cores */
+extern unsigned ctx_load[CORE_NCORE];
 
 /* The available states of a context */
 enum ctx_state_e {
@@ -24,6 +26,8 @@ enum ctx_state_e {
 
 /* Define the context structure */
 struct ctx_s {
+
+    unsigned ctx_id;
 	void * ctx_stack;
 	void * ctx_esp;
 	void * ctx_ebp;
@@ -75,6 +79,6 @@ void switch_to_ctx(struct ctx_s * ctx,unsigned);
  */
 void start_current_ctx();
 
-void init_tab();
+void init_ctx_tab();
 
 #endif

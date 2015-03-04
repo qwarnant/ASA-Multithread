@@ -19,39 +19,39 @@ static void doit(){
 	        pow *= 2;
 	    }
 }
-static void ping() {
+static void ping(unsigned val) {
 	while (1) {
 		doit();
-		printf("ping\n");
+		printf("ping : %d\n", val);
 	}
 }
 
-static void pong() {
+static void pong(unsigned val) {
 	while (1) {
 		doit();
-		printf("pong\n");
+        printf("pong : %d\n", val);
 
 	}
 }
 
 int main(int argc, char* argv[]) {
-	init_tab();
+    init_ctx_tab();
 	init_multicore();
-	irq_enable();
-	create_ctx(STACK_SIZE, ping, NULL );
-	create_ctx(STACK_SIZE, pong, NULL );
-	irq_enable();
+
+	create_ctx(STACK_SIZE, ping, 1 );
+	create_ctx(STACK_SIZE, pong, 2 );
+
+
 	/* Buffer access control */
 	sem_init(&mutex, 1);
 	/* At the beginning, the buffer is empty */
 	sem_init(&empty, BUFFER_SIZE);
 	sem_init(&full, 0);
-	irq_enable();
+
 	/* Start the context scheduler */
 	printf("Start the scheduler ...\n");
 
 	yield();
-	irq_enable();
 	printf("\nEND OF MAIN !");
 
 	return EXIT_SUCCESS;
