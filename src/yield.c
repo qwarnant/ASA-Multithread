@@ -20,6 +20,7 @@ void init_ctx_tab() {
 	for(i = 0; i < CORE_NCORE; i++) {
 		current_ctx[i] = NULL;
 		ctx_ring[i] = NULL;
+		ctx_load[i] = 0;
 	}
 }
 
@@ -123,8 +124,9 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 
 	struct ctx_s * new_ctx;
 	int core_id = (last_core_id) % CORE_NCORE;
+	ctx_load[core_id]++;
+
 	last_core_id++;
-	//printf("coreid %d\n",core_id);
 
 	new_ctx = malloc(sizeof(struct ctx_s));
 	if (new_ctx == 0) {
@@ -149,7 +151,7 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 
 void yield() {
 	unsigned core_id = (unsigned) _in(CORE_ID);
-	_out(TIMER_ALARM, 0xffffffff - 20);
+	_out(TIMER_ALARM, 0xffffffff - 2000);
 
 	if (ctx_ring[core_id] == NULL ) {
 		return;

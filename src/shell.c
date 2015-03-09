@@ -51,17 +51,22 @@ static void execute(const char *name) {
 }
 
 static void loop(void) {
-    char name[64];
+    char *name;
 	char temp[64];
     int status;
 
-    memset(name, '\0', sizeof(name));
-    memset(temp, '\0', sizeof(temp));
+    //memset(name, '\0', sizeof(name));
+    //memset(temp, '\0', sizeof(temp));
     // avant la boucle
-	while (printf("%s> ", "/"), scanf("%62s", name) == 1){
+	while (1){
+
+	      name = readline ("> ");
+
+	      if (!name)
+	        break;
 
 		if (name[0] == '&') {
-			strncpy(temp, name + 1, strlen(name)-1);
+			strncpy(temp, name+1, strlen(name));
 			status = create_ctx(STACK_WIDTH, execute, temp);
 			printf("temp %s \n", temp);
             if(status == RETURN_FAILURE) {
@@ -73,8 +78,6 @@ static void loop(void) {
 		} else {
 			execute(name);
 		}
-	    memset(name, '\0', sizeof(name));
-	    memset(temp, '\0', sizeof(temp));
 
 	}
 

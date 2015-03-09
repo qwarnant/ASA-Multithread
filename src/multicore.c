@@ -14,7 +14,8 @@
 #include "multicore.h"
 #include "irq.h"
 #include "yield.h"
-
+#include <readline/readline.h>
+#include <readline/history.h>
 
 void init_multicore() {
 	unsigned int i;
@@ -77,7 +78,7 @@ void start_core() {
 
 /* Define the method called when a timer IRQ occurs */
 void manage_core() {
-    //balance_ctx();
+    balance_ctx();
     yield();
 }
 
@@ -121,7 +122,7 @@ static void start_core_semaphore() {
 static void start_timer_core() {
 	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
-	 _out(TIMER_ALARM, 0xffffffff - 20);
+	 _out(TIMER_ALARM, 0xffffffff - 2000);
 }
 
 /*
@@ -132,10 +133,10 @@ int balance_ctx() {
 
     for(corei = 0; corei < CORE_NCORE; corei++) {
         for(corej = corei + 1; corej < CORE_NCORE; corej++) {
-            unsigned diff = ctx_load[corei] - corej;
+            int diff = ctx_load[corei] - corej;
             if(diff > 1) {
                 if(swap_ctx(corei, corej) == RETURN_FAILURE) {
-                    fprintf(stderr, "Error when balancing the load on the core : %d - %d\n", corei, corej);
+                    fprintf(stderr, "Error when balancing the load on the core : %d - %d with diff %d\n", corei, corej, diff);
                     continue;
                 }
                 ctx_balanced_count++;

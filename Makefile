@@ -3,7 +3,7 @@ LINK 	= gcc
 CFLAGS  = -m32 -Wall -g
 INCPATH	= -I. -I$(IDIR)
 LDFLAGS = -m32
-LIBS	= -lhardware -lm -lpthread
+LIBS	= -lhardware -lm -lpthread -lreadline
 RM      = rm -f
 
 BIN	= prodcons shell
