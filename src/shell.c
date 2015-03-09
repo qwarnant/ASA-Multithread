@@ -105,12 +105,20 @@ static void top(struct _cmd *c) {
 
     for(core = 0; core < CORE_NCORE; core++) {
 
+        if(ctx_ring[core] == NULL) {
+        	continue;
+        }
+
         struct ctx_s tmp = *ctx_ring[core];
 
-        printf("PID\tCID\tEBP\t\tESP\t\tSTATE\t\tSTART\t\tUPTIME\n");
+        printf("PID\tCID\t\tEBP\t\tESP\t\tSTATE\t\tSTART\tUPTIME\n");
         do {
             //get_state_name(tmp.ctx_state, state_name);
             printf("%d\t%d\t%p\t%p\t%s\t\t%d\t%d\n", tmp.ctx_id, tmp.ctx_core_id, tmp.ctx_ebp, tmp.ctx_esp, state_name, 0, 0);
+
+            if(tmp.ctx_next == NULL) {
+            	break;
+            }
 
             tmp = *tmp.ctx_next;
         } while (tmp.ctx_id != ctx_ring[core]->ctx_id);
