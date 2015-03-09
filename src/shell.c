@@ -57,14 +57,13 @@ static void loop(void) {
 
     memset(name, '\0', sizeof(name));
     memset(temp, '\0', sizeof(temp));
-// avant la boucle
+    // avant la boucle
 	while (printf("%s> ", "/"), scanf("%62s", name) == 1){
-        printf("val : %s\n",name);
 
 		if (name[0] == '&') {
 			strncpy(temp, name + 1, strlen(name)-1);
 			status = create_ctx(STACK_WIDTH, execute, temp);
-
+			printf("temp %s \n", temp);
             if(status == RETURN_FAILURE) {
                 fprintf(stderr, "Failed to create context : %s\n", name);
                 return;
@@ -74,7 +73,8 @@ static void loop(void) {
 		} else {
 			execute(name);
 		}
-		//free(name);
+	    memset(name, '\0', sizeof(name));
+	    memset(temp, '\0', sizeof(temp));
 
 	}
 
@@ -160,8 +160,11 @@ int main(int argc, char **argv) {
 	 * init
 	 */
     create_ctx(STACK_WIDTH, loop,NULL );
-   // create_ctx(STACK_WIDTH, loop, NULL );
-	yield();
+    //create_ctx(STACK_WIDTH, loop, NULL );
+	//yield();
+	while(1) {
+
+	}
 
 	printf("No more active ctx\n");
 

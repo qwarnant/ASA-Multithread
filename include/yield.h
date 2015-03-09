@@ -8,7 +8,7 @@
 
 /*	The magic value to verify the consistance of the context structure  */
 #define CTX_MAGIC 0xCAFEBABE
-#define STACK_WIDTH 4
+#define STACK_WIDTH 16384
 
 typedef void funct_t(void *);
 

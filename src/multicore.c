@@ -52,8 +52,6 @@ void init_multicore() {
 
 
     _out(CORE_STATUS, 0xF);
-	_out(CORE_IRQMAPPER , 1 << TIMER_IRQ);
-	_out(CORE_IRQMAPPER +1, 1 << TIMER_IRQ);
 
 }
 
@@ -67,8 +65,11 @@ void start_core() {
 
     printf("Start the core #%d\n", coreId);
 
+	_out(CORE_IRQMAPPER + coreId, 1 << TIMER_IRQ);
+
+
     while (1) {
-        doIt();
+        //doIt();
        // printf("End the job core #%d\n", coreId);
     }
 

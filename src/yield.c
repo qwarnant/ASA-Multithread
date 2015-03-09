@@ -9,7 +9,7 @@ struct ctx_s * current_ctx[CORE_NCORE];
 struct ctx_s * ctx_ring[CORE_NCORE];
 unsigned ctx_load[CORE_NCORE];
 
-static unsigned last_core_id = 0;
+static unsigned last_core_id = 1;
 static unsigned last_pid = 0;
 
 static void * initial_ebp;
@@ -119,10 +119,12 @@ void start_current_ctx() {
 }
 
 int create_ctx(int stack_size, funct_t f, void* args) {
+	irq_disable();
+
 	struct ctx_s * new_ctx;
 	int core_id = (last_core_id) % CORE_NCORE;
 	last_core_id++;
-	printf("coreid %d\n",core_id);
+	//printf("coreid %d\n",core_id);
 
 	new_ctx = malloc(sizeof(struct ctx_s));
 	if (new_ctx == 0) {
@@ -140,6 +142,7 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 
 	init_ctx(new_ctx, (size_t) stack_size, f, args, core_id);
 	printf("coreid : %d   core add : %p\n",new_ctx->ctx_core_id,ctx_ring[core_id]);
+	irq_enable();
 
 	return 0;
 }
