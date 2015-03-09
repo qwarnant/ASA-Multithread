@@ -17,6 +17,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+static unsigned last_core_id = 0;
+
 void init_multicore() {
 	unsigned int i;
 	char *c, HW_CONFIG[100];
@@ -50,8 +52,6 @@ void init_multicore() {
 		_out(CORE_IRQMAPPER + i, 0);
 	}
 	_out(CORE_UNLOCK, 0);
-
-
     _out(CORE_STATUS, 0xF);
 
 }
@@ -122,7 +122,7 @@ static void start_core_semaphore() {
 static void start_timer_core() {
 	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
-	 _out(TIMER_ALARM, 0xffffffff - TIMER_MSEC);
+	 _out(TIMER_ALARM, 0xffffffff - 20);
 }
 
 /*

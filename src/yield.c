@@ -9,7 +9,6 @@ struct ctx_s * current_ctx[CORE_NCORE];
 struct ctx_s * ctx_ring[CORE_NCORE];
 unsigned ctx_load[CORE_NCORE];
 
-static unsigned last_core_id = 1;
 static unsigned last_pid = 0;
 
 static void * initial_ebp;
@@ -47,10 +46,24 @@ int init_ctx(struct ctx_s * ctx, size_t stack_size, funct_t f, void * arg,
 	return EXIT_SUCCESS;
 }
 
+int get_available_core(){
+
+	unsigned i = 1, min = 1000, coreid=1;
+	for(i = 1; i < CORE_NCORE; i++){
+		unsigned load = ctx_load[i];
+		if(min > load){
+			min = load;
+			coreid = i;
+		}
+	}
+
+	return coreid;
+}
+
 void switch_to_ctx(struct ctx_s * ctx, unsigned core_id) {
 
 	assert(ctx->ctx_magic == CTX_MAGIC);
-	_out(TIMER_ALARM, 0xffffffff - 20);
+	_out(TIMER_ALARM, 0xffffffff - TIMER_MSEC);
 
 	while (ctx->ctx_state == CTX_END || ctx->ctx_state == CTX_STOP) {
 
@@ -70,6 +83,7 @@ void switch_to_ctx(struct ctx_s * ctx, unsigned core_id) {
 		if (ctx->ctx_state == CTX_END) {
 			free(ctx->ctx_stack);
 			free(ctx);
+			ctx_load[core_id]--;
 		}
 
 	}
@@ -124,11 +138,11 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 
 	struct ctx_s * new_ctx;
 
-	int core_id = 1;
+	int core_id = get_available_core();
 
 	ctx_load[core_id]++;
 
-	last_core_id++;
+
 
 	new_ctx = malloc(sizeof(struct ctx_s));
 	if (new_ctx == 0) {

@@ -15,8 +15,7 @@ struct _cmd {
 	void (*fun)(struct _cmd *c);
 	char *comment;
 };
-static void dump(unsigned char *buffer, unsigned int buffer_size,
-		int ascii_dump, int octal_dump);
+
 static void compute(struct _cmd *c);
 static void top(struct _cmd *c);
 static void new(struct _cmd *c);
@@ -92,7 +91,7 @@ static void new(struct _cmd *c) {
 static void compute(struct _cmd *c) {
 	long i;
 	long j;
-	for (i = 0; i < 10000; i++) {
+	for (i = 0; i < 10000000; i++) {
 		pow(i, j);
 		j++;
 		j %= 1000;
@@ -163,6 +162,12 @@ int main(int argc, char **argv) {
 	 * init
 	 */
     create_ctx(STACK_WIDTH, loop,NULL );
+
+    create_ctx(STACK_WIDTH, compute,NULL );
+    create_ctx(STACK_WIDTH, compute,NULL );
+    create_ctx(STACK_WIDTH, compute,NULL );
+
+
     //create_ctx(STACK_WIDTH, loop, NULL );
 	//yield();
 	while(1) {

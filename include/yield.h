@@ -81,4 +81,6 @@ void start_current_ctx();
 
 void init_ctx_tab();
 
+int get_available_core();
+
 #endif
