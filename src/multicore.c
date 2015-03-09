@@ -122,7 +122,7 @@ static void start_core_semaphore() {
 static void start_timer_core() {
 	unsigned coreId = (unsigned) _in(CORE_ID);
 	printf("Received timer IRQ from %d\n", coreId);
-	 _out(TIMER_ALARM, 0xffffffff - 2000);
+	 _out(TIMER_ALARM, 0xffffffff - TIMER_MSEC);
 }
 
 /*

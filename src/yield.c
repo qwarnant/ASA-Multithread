@@ -123,7 +123,9 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 	irq_disable();
 
 	struct ctx_s * new_ctx;
-	int core_id = (last_core_id) % CORE_NCORE;
+
+	int core_id = 1;
+
 	ctx_load[core_id]++;
 
 	last_core_id++;
@@ -151,7 +153,7 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 
 void yield() {
 	unsigned core_id = (unsigned) _in(CORE_ID);
-	_out(TIMER_ALARM, 0xffffffff - 2000);
+	_out(TIMER_ALARM, 0xffffffff - TIMER_MSEC);
 
 	if (ctx_ring[core_id] == NULL ) {
 		return;
