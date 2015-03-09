@@ -133,7 +133,9 @@ int balance_ctx() {
 
     for(corei = 0; corei < CORE_NCORE; corei++) {
         for(corej = corei + 1; corej < CORE_NCORE; corej++) {
-            int diff = ctx_load[corei] - corej;
+            int diff = ctx_load[corei] - ctx_load[corej];
+        	printf("Load average difference between the core : %d - %d with diff %d\n", corei, corej, diff);
+
             if(diff > 1) {
                 if(swap_ctx(corei, corej) == RETURN_FAILURE) {
                     fprintf(stderr, "Error when balancing the load on the core : %d - %d with diff %d\n", corei, corej, diff);
@@ -162,6 +164,8 @@ int swap_ctx(unsigned core_src, unsigned core_dest) {
     }
 
     temp = ctx_ring[core_src];
+    prec = temp;
+
 
     // Searching for a context to swap
     // to the second core
