@@ -19,7 +19,7 @@ struct _cmd {
 static void compute(struct _cmd *c);
 static void top(struct _cmd *c);
 static void new(struct _cmd *c);
-
+static void idle(struct _cmd *c);
 static void help(struct _cmd *c);
 static void quit(struct _cmd *c);
 static void xit(struct _cmd *c);
@@ -67,13 +67,12 @@ static void loop(void) {
 		if (name[0] == '&') {
 			strncpy(temp, name+1, strlen(name));
 			status = create_ctx(STACK_WIDTH, execute, temp);
-			printf("temp %s \n", temp);
+
             if(status == RETURN_FAILURE) {
                 fprintf(stderr, "Failed to create context : %s\n", name);
                 return;
             }
 
-			printf("%s %d\n", temp, status);
 		} else {
 			execute(name);
 		}
@@ -153,6 +152,13 @@ static void none(struct _cmd *c) {
 }
 
 
+static void idle(struct _cmd *c) {
+	while(TRUE){
+
+	}
+}
+
+
 int main(int argc, char **argv) {
 
     init_ctx_tab();
@@ -161,11 +167,9 @@ int main(int argc, char **argv) {
 	/*
 	 * init
 	 */
+    create_ctx(STACK_WIDTH, idle,NULL );
     create_ctx(STACK_WIDTH, loop,NULL );
 
-    create_ctx(STACK_WIDTH, compute,NULL );
-    create_ctx(STACK_WIDTH, compute,NULL );
-    create_ctx(STACK_WIDTH, compute,NULL );
 
 
     //create_ctx(STACK_WIDTH, loop, NULL );

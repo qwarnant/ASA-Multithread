@@ -91,3 +91,104 @@ contexte, on a donc un système qui est toujours correctement balancé.
 Exemples d'éxécution
 --------------------
 
+###Prodcons
+```
+Initialize the core...
+Start the core #3
+Start the core #2
+Current ctx put on core #1
+coreid : 1   core add : 0x8e71760
+Current ctx put on core #2
+coreid : 2   core add : 0x8e75798
+Start the scheduler ...
+Start the core #1
+	Load average difference between the core : 0 - 1 with diff -1
+	Load average difference between the core : 0 - 2 with diff -1
+	Load average difference between the core : 0 - 3 with diff 0
+	Load average difference between the core : 1 - 2 with diff 0
+	Load average difference between the core : 1 - 3 with diff 1
+	Load average difference between the core : 2 - 3 with diff 1
+	Load average difference between the core : 0 - 1 with diff -1
+	Load average difference between the core : 0 - 2 with diff -1
+	Load average difference between the core : 0 - 3 with diff 0
+	Load average difference between the core : 1 - 2 with diff 0
+	Load average difference between the core : 1 - 3 with diff 1
+	Load average difference between the core : 2 - 3 with diff 1
+start : 1
+Start the current context on the core #1
+	Load average difference between the core : 0 - 1 with diff -1
+	Load average difference between the core : 0 - 2 with diff -1
+	Load average difference between the core : 0 - 3 with diff 0
+	Load average difference between the core : 1 - 2 with diff 0
+	Load average difference between the core : 1 - 3 with diff 1
+	Load average difference between the core : 2 - 3 with diff 1
+start : 2
+Start the current context on the core #2
+ping : 1
+pong : 2
+```
+
+Cet execution de prodons affiche plusieurs informations :
+1) Tous les coeurs sont démarrés, le contexte ping est sur le coeur 1 et pong sue le 2.
+	Il n'y a rien sur le coeur 3 et 4
+2) Le ballanceur de charge est également mis en place. 'load average..."
+3) Une fois tous les coeurs balancés et les contextes mis en place, les commandes ping/pong sont executées respectivement sur le coeur 1 et 2.
+4) Ping : 1, correspond à l'appel de la méthode ping, sur le coeur 1
+   Pong : 2, correspond à l'appel de la méthode pong, sur le coeur 2
+
+
+
+###Shell
+
+####Multicore
+```
+	start : 3
+	Start the current context on the core #3
+	new
+	new
+	Current ctx put on core #1
+	coreid : 1   core add : 0x8842760
+	> new
+	new
+	Current ctx put on core #2
+	coreid : 2   core add : 0x8846798
+	> new
+	new
+	Current ctx put on core #3
+	coreid : 3   core add : 0xb5b0c2d8
+	> new
+	new
+	Current ctx put on core #1
+	coreid : 1   core add : 0x8842760
+	> job finished
+```
+
+1) La commande "new" permet de lancer un nouveau contexte qui execute la methode "compute" (une simple boucle qui dure un certains temps).
+2) Comme on peut observer, chaque nouveau contexte de la commande cmpute est placée sur chaque coeur(1, puis 2, ensuite 3, puis de nouveau 1)
+   Nous considerons que seul le coeur 0 est utilisé pour la boucle "loop", permettant d'ecrire des commandes a excuter.
+3) A la fin de cet exemple, on peut voir que le premier contexte se termine, en affichant "job finished"
+
+
+####Mise en background
+
+```
+	&compute
+	Current ctx put on core #3
+	coreid : 3   core add : 0xb5b0c2d8
+	> Load average difference between the core : 0 - 1 with diff -1
+	Load average difference between the core : 0 - 2 with diff -1
+	Load average difference between the core : 0 - 3 with diff -1
+	Load average difference between the core : 1 - 2 with diff 0
+	Load average difference between the core : 1 - 3 with diff 0
+	Load average difference between the core : 2 - 3 with diff 0
+	start : 3
+	Start the current context on the core #3
+	compute
+	job finished
+```
+
+1) '&' permet de placer une commande en background, et de l'executer.
+2) On peut clairement voir que notre algorithme de repartition des charges est executés également (load average...)
+3) Il en resulte que les autres coeurs sont tous également occupés, de ce fait compute continue d'etre executé sur le coeur 3 et se termine
+
+

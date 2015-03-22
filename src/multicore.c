@@ -17,7 +17,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-static unsigned last_core_id = 0;
 
 void init_multicore() {
 	unsigned int i;
@@ -78,7 +77,7 @@ void start_core() {
 
 /* Define the method called when a timer IRQ occurs */
 void manage_core() {
-    //balance_ctx();
+    balance_ctx();
     yield();
 }
 

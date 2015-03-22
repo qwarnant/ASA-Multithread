@@ -137,8 +137,8 @@ int create_ctx(int stack_size, funct_t f, void* args) {
 
 	struct ctx_s * new_ctx;
 
-	//int core_id = get_available_core();
-	int core_id = 1;
+	int core_id = get_available_core();
+	//int core_id = 1;
 
 
 	ctx_load[core_id]++;
