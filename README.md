@@ -41,7 +41,7 @@ Code samples
 1. Nous avons développé une petite fonction qui nous permet d'obtenir directement le coeur le moins chargé à la création d'un nouveau
 contexte, on a donc un système qui est toujours correctement balancé.
 
-```
+```C
 
     int get_available_core(){
     
@@ -57,3 +57,15 @@ contexte, on a donc un système qui est toujours correctement balancé.
     	return coreid;
     }
 ```
+
+2. Nous avons développé un terminal avec une commande top qui permet de lister sur chaque coeur les processus actifs avec leur état
+
+```C
+    
+    static void top(struct _cmd *c) 
+```
+
+
+Exemples d'éxécution
+--------------------
+
