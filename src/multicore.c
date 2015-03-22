@@ -78,7 +78,7 @@ void start_core() {
 
 /* Define the method called when a timer IRQ occurs */
 void manage_core() {
-    balance_ctx();
+    //balance_ctx();
     yield();
 }
 
@@ -156,7 +156,7 @@ int balance_ctx() {
 int swap_ctx(unsigned core_src, unsigned core_dest) {
     struct ctx_s* temp, *prec = NULL, *targetCtx = NULL;
 
-    irq_disable(); // => TODO replace with multicore semaphore to protect the list check core_semaphore method
+    irq_disable();
 
     // Empty context ring
     if(ctx_ring[core_src] == NULL) {
@@ -206,7 +206,7 @@ int swap_ctx(unsigned core_src, unsigned core_dest) {
     ctx_load[core_dest]++;
     ctx_load[core_src]--;
 
-    irq_enable(); // => TODO replace with multicore semaphore to protect the list check core_semaphore method
+    irq_enable();
 
     return RETURN_SUCCESS;
 }

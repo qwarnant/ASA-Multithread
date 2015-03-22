@@ -56,6 +56,28 @@ contexte, on a donc un système qui est toujours correctement balancé.
     
     	return coreid;
     }
+    
+    int balance_ctx() {
+        unsigned corei, corej, ctx_balanced_count = 0;
+    
+        for(corei = 0; corei < CORE_NCORE; corei++) {
+            for(corej = corei + 1; corej < CORE_NCORE; corej++) {
+                int diff = ctx_load[corei] - ctx_load[corej];
+            	printf("Load average difference between the core : %d - %d with diff %d\n", corei, corej, diff);
+    
+                if(diff > 1) {
+                    if(swap_ctx(corei, corej) == RETURN_FAILURE) {
+                        fprintf(stderr, "Error when balancing the load on the core : %d - %d with diff %d\n", corei, corej, diff);
+                        continue;
+                    }
+                    ctx_balanced_count++;
+                }
+            }
+        }
+    
+        return ctx_balanced_count;
+    }
+    
 ```
 
 2. Nous avons développé un terminal avec une commande top qui permet de lister sur chaque coeur les processus actifs avec leur état
