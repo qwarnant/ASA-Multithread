@@ -1,3 +1,6 @@
+#include <multicore.h>
+#include <hardware.h>
+#include <stdio.h>
 #include "klock.h"
 #include "irq.h"
 
@@ -23,6 +26,7 @@ void klock() {
 
 void kunlock() {
     unsigned core_id = (unsigned) _in(CORE_ID);
+    unsigned locked = (unsigned) _in(CORE_LOCK);
 
     if(locked == 0) {
         printf("The lock is not taken\n");

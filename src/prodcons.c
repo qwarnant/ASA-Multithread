@@ -52,6 +52,11 @@ int main(int argc, char* argv[]) {
 	printf("Start the scheduler ...\n");
 
 	yield();
+
+	while(1) {
+
+	}
+
 	printf("\nEND OF MAIN !");
 
 	return EXIT_SUCCESS;
