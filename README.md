@@ -129,12 +129,11 @@ pong : 2
 ```
 
 Cet execution de prodons affiche plusieurs informations :
-1.	Tous les coeurs sont démarrés, le contexte ping est sur le coeur 1 et pong sue le 2.
-	Il n'y a rien sur le coeur 3 et 4
+
+1.	Tous les coeurs sont démarrés, le contexte ping est sur le coeur 1 et pong sue le 2. Il n'y a rien sur le coeur 3 et 4
 2.	Le ballanceur de charge est également mis en place. 'load average..."
 3.	Une fois tous les coeurs balancés et les contextes mis en place, les commandes ping/pong sont executées respectivement sur le coeur 1 et 2.
-4.	Ping : 1, correspond à l'appel de la méthode ping, sur le coeur 1
-   Pong : 2, correspond à l'appel de la méthode pong, sur le coeur 2
+4.	Ping : 1, correspond à l'appel de la méthode ping, sur le coeur 1. Pong : 2, correspond à l'appel de la méthode pong, sur le coeur 2
 
 
 
