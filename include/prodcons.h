@@ -36,6 +36,7 @@ void consumer(void *);
     of the program
  */
 void produce_object();
+
 /*
     remove_object()
     This method is sleeping a moment which is introduce by the user
@@ -43,7 +44,18 @@ void produce_object();
  */
 void remove_object();
 
+/*
+* put_object()
+* This method is a dummy method used to notice the user that an object
+* has been put in the buffer
+*/
 void put_object();
+
+/*
+* put_object()
+* This method is a dummy method used to notice the user that an object
+* has been use by the consumer
+*/
 void use_object();
 
 #endif

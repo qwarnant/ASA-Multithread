@@ -79,8 +79,19 @@ void switch_to_ctx(struct ctx_s * ctx,unsigned);
  */
 void start_current_ctx();
 
+/**
+* init_ctx_tab()
+* This method initiates the context lists for the load balancing,
+* the context switching and the current context management.
+* The method puts NULL pointer inside each case of the arrays.
+*/
 void init_ctx_tab();
 
+/**
+* get_available_core()
+* This method returns the next available core in the ring to put a context on it
+* It depends of the current load on each core of the system.
+*/
 int get_available_core();
 
 #endif
