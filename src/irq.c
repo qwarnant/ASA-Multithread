@@ -9,13 +9,10 @@
 
 
 void irq_disable() {
-   // printf("irq disable\n");
-
 	_mask(15);
 }
 
 void irq_enable() {
-   // printf("irq enable\n");
 	_mask(0);
 }
 

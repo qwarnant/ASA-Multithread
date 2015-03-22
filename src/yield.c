@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "yield.h"
-#include "klock.h"
 
 struct ctx_s * current_ctx[CORE_NCORE];
 struct ctx_s * ctx_ring[CORE_NCORE];
@@ -64,9 +63,6 @@ void switch_to_ctx(struct ctx_s * ctx, unsigned core_id) {
 	assert(ctx->ctx_magic == CTX_MAGIC);
 	_out(TIMER_ALARM, 0xffffffff - TIMER_MSEC);
 
-	// Blocage noyau
-	klock();
-
 	while (ctx->ctx_state == CTX_END || ctx->ctx_state == CTX_STOP) {
 
 		if (ctx_ring[core_id] == ctx) {
@@ -99,7 +95,6 @@ void switch_to_ctx(struct ctx_s * ctx, unsigned core_id) {
 
 	}
 	current_ctx[core_id] = ctx;
-	kunkock();
 
 	asm ("movl %0, %%esp" "\n\t" "movl %1, %%ebp"
 			:
